@@ -1,4 +1,4 @@
-/* Run in SAP GUI for Java. Configure a COPY with the target below.
+/* Run in SAP GUI for Java via java-shell.py or the editor. Configure a COPY below.
  * Opens SE16 and the table selection screen, optionally executing a bounded read.
  * Does not save or change records.
  * A read-only business transaction still requires navigation-capable scripting.

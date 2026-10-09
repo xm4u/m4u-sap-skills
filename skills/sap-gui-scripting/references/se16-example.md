@@ -8,7 +8,7 @@ The example targets the observed classic SE16 screen: selection report `/1BCDWB/
 
 ## Configure a local copy
 
-First replay `inspect-session.js`. Copy the action script into a local working directory outside the repository and configure its first variables with the observed target:
+First submit `inspect-session.js` through the [Java shell client](java-shell-runtime.md), or replay it in the editor if the bridge is not loaded. Copy the action script into a local working directory outside the repository and configure its first variables with the observed target:
 
 ```javascript
 var SAP_GUI_TARGET = {
@@ -24,7 +24,7 @@ var SAP_GUI_MAX_ROWS = 10;
 
 The shipped script leaves target identity empty intentionally and refuses to navigate until configured. Keep system/client/user as strings. An absolute session ID supplements identity checks; it is not a persistent user identifier.
 
-Start at SAP Easy Access (`SESSION_MANAGER`) or SE16 with no unrelated unsaved work. Replay from **Scripts > Scripting**. With execute disabled, expect a returned `phase: "selection"`, transaction `SE16`, report `/1BCDWB/DBVBAK`, and screen `1000`; verify the visible VBAK selection screen.
+Start at SAP Easy Access (`SESSION_MANAGER`) or SE16 with no unrelated unsaved work. Submit the local copy with `java-shell.py --script /absolute/path/se16-configured.js`, or replay from **Scripts > Scripting**. With execute disabled, expect a returned `phase: "selection"`, transaction `SE16`, report `/1BCDWB/DBVBAK`, and screen `1000`; verify the VBAK selection controls and add native visual inspection when available.
 
 For a user-requested data display, set `SAP_GUI_EXECUTE = true` in the local copy. The script validates the row limit as an integer from 1 to 100, sets `wnd[0]/usr/txtMAX_SEL`, checks it was applied, and sends F8 once. The row cap limits results, not the total database work. A correctness/regression case should also use a known key or filter adapted from a recording rather than relying on whichever first rows appear.
 
@@ -37,7 +37,7 @@ For a user-requested data display, set `SAP_GUI_EXECUTE = true` in the local cop
 - Before execution, the configured maximum was read back from `txtMAX_SEL`.
 - With execution enabled, the action reached a non-selection SE16 screen without an error/modal. The returned phase is `query_completed`; inspect the native list separately to prove table identity and rows.
 
-Replay in the editor when JSON output is needed. Scripts in configured directories can also be launched directly from the **Scripts** menu; in the tested client this showed a completion dialog instead of the editor's returned JSON. A completion dialog does not replace checking the resulting session screen.
+The shell client returns JSON directly. Without a bridge, replay in the editor when JSON output is needed. Scripts in configured directories can also be launched directly from the **Scripts** menu; in the tested client this showed a completion dialog instead of the editor's returned JSON. A completion dialog does not replace checking the resulting session screen.
 
 ## Java live baseline: 2026-10-09
 

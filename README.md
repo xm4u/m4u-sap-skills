@@ -1,6 +1,6 @@
 # m4u SAP Skills
 
-A collection of SAP skills for coding agents. `sap-abap-standards` provides conventions for developing and reviewing ABAP code. `sap-gui-scripting` provides automation and testing for SAP GUI for Java (built-in JavaScript) and native SAP GUI for Windows (COM/VBScript).
+A collection of SAP skills for coding agents. `sap-abap-standards` provides conventions for developing and reviewing ABAP code. `sap-gui-scripting` provides shell automation for SAP GUI for Java (local file bridge into the built-in JavaScript engine) and native SAP GUI for Windows (COM/VBScript).
 
 It is intended for ABAP developers, GUI testers, and coding agents working with SAP objects and desktop workflows.
 
@@ -9,7 +9,7 @@ It is intended for ABAP developers, GUI testers, and coding agents working with 
 | Skill | Coverage |
 | --- | --- |
 | [sap-abap-standards](skills/sap-abap-standards/SKILL.md) | ABAP naming, traceability, code quality, performance, constants, authorizations, and program structure. |
-| [sap-gui-scripting](skills/sap-gui-scripting/SKILL.md) | Session inspection, navigation, and SE16 testing for SAP GUI for Java and SAP GUI for Windows. |
+| [sap-gui-scripting](skills/sap-gui-scripting/SKILL.md) | Shell session inspection, navigation, authorized editor workflows, and GUI testing for Java and Windows. |
 
 The ABAP skill is organized into ten topics. Its [SKILL.md](skills/sap-abap-standards/SKILL.md) routes tasks to topic guides, detailed rules, examples, and checklists.
 
@@ -50,6 +50,9 @@ m4u-sap-skills/
         └── scripts/
             ├── inspect-session.js
             ├── se16-table-smoke.js
+            ├── java-shell-bridge.js
+            ├── java-shell.py
+            ├── validate-java-shell.py
             ├── validate-scripts.cjs
             └── windows/
                 ├── runtime.vbs
@@ -71,7 +74,7 @@ git clone https://github.com/xm4u/m4u-sap-skills.git
 cd m4u-sap-skills
 ```
 
-There are no project dependencies to install or build steps to run. The instructions are written in Markdown; the ABAP snippets are reference examples. Java GUI scripts execute inside the Java client; Windows `.vbs` scripts attach through COM using Windows Script Host (`cscript.exe`). Both require an authenticated session and effective scripting permissions. Node.js is used only for optional local Java fixture checks.
+There are no project dependencies to install or build steps to run. The instructions are written in Markdown; the ABAP snippets are reference examples. Java GUI scripts execute inside the Java client; its shell adapter uses Python 3.8+ and a bridge loaded once in that client. Windows `.vbs` scripts attach through COM using Windows Script Host (`cscript.exe`). Both require an authenticated session and effective scripting permissions. Node.js is used only for optional local Java fixture checks.
 
 For a specific question, open the relevant topic guide and follow its links to the detailed references. To review a complete development, start with the [comprehensive review checklist](skills/sap-abap-standards/references/review/review-checklist.md).
 
@@ -113,7 +116,7 @@ pnpm dlx skills add . --skill sap-gui-scripting
 
 The GitHub commands require the repository and these files to be published at `xm4u/m4u-sap-skills`. Until then, use the local path commands.
 
-See the [skills CLI documentation](https://github.com/vercel-labs/skills#options) for installation options. The skill itself has no runtime dependencies; running the CLI through `pnpm dlx` requires Node.js and pnpm.
+See the [skills CLI documentation](https://github.com/vercel-labs/skills#options) for installation options. The ABAP documentation has no runtime dependencies; the GUI adapters use the runtimes described above. Running the installation CLI through `pnpm dlx` requires Node.js and pnpm.
 
 ### Manual installation from a ZIP
 
@@ -175,9 +178,16 @@ The comprehensive review is an entry point: it identifies the objects involved a
 
 ### SAP GUI for Java automation and testing
 
-Start with [setup and execution](skills/sap-gui-scripting/references/setup-and-runtime.md). Load [inspect-session.js](skills/sap-gui-scripting/scripts/inspect-session.js) in SAP GUI's scripting window and replay it to inspect reachable sessions. It reads metadata without navigating or retrieving table rows.
+Start with [Java shell execution](skills/sap-gui-scripting/references/java-shell-runtime.md). Load [java-shell-bridge.js](skills/sap-gui-scripting/scripts/java-shell-bridge.js) once in the authenticated client's scripting window and replay it. After bootstrap, an agent needs only shell access:
 
-For the [SE16 example](skills/sap-gui-scripting/references/se16-example.md), configure a local copy of [se16-table-smoke.js](skills/sap-gui-scripting/scripts/se16-table-smoke.js) with the observed system, client, user, and optional session ID. It opens the VBAK selection screen by default; enable its execution option only for a requested table read. The example caps results at ten rows and does not modify records.
+```sh
+python3 skills/sap-gui-scripting/scripts/java-shell.py --status
+python3 skills/sap-gui-scripting/scripts/java-shell.py --script skills/sap-gui-scripting/scripts/inspect-session.js
+```
+
+The commands return JSON and exit codes directly. The inspection reads session metadata without navigation or table rows. A running bridge removes the need for manual replay or copying JSON for each task. The script editor can be closed. Use [client setup](skills/sap-gui-scripting/references/setup-and-runtime.md) for bootstrap details.
+
+For the [SE16 example](skills/sap-gui-scripting/references/se16-example.md), configure a local copy of [se16-table-smoke.js](skills/sap-gui-scripting/scripts/se16-table-smoke.js) with the observed system, client, user, and optional session ID, then submit it using `java-shell.py --script /absolute/path/se16-configured.js`. It opens the VBAK selection screen by default; enable its execution option only for a requested table read. The example caps results at ten rows and does not modify records.
 
 ```text
 Use sap-gui-scripting to inspect my open SAP GUI for Java session,
@@ -185,7 +195,7 @@ then run an SE16/VBAK display smoke test limited to ten rows.
 Verify the final SAP screen and report what actually passed.
 ```
 
-Java scripts run in the Java client on the target desktop. The Java live baseline is macOS with SAP GUI for Java 8.10 rev13; other Java platforms and screen variants need separate validation.
+Java scripts run in the Java client on the target desktop; Python only transports local files. The Java shell baseline is macOS with SAP GUI for Java 8.10 rev13. It passed status, authenticated session inspection and script error reporting without an open editor. The native `-f`/`-F` launcher starts a separate instance in this version, so it is not existing-session attachment. Other Java platforms, screen variants and SE38 writes need separate validation. Stop the local bridge with `java-shell.py --stop` without closing SAP.
 
 ### SAP GUI for Windows automation and testing
 

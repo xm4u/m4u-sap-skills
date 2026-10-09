@@ -1,6 +1,6 @@
 # Setup and execution
 
-This page covers SAP GUI for Java. For native SAP GUI for Windows, use [Windows COM setup](windows-runtime.md).
+This page covers SAP GUI for Java's editor and client setup. For agents with shell access, start with [Java shell execution](java-shell-runtime.md): after a one-time in-client bridge bootstrap, scripts and JSON results are exchanged through shell commands. For native SAP GUI for Windows, use [Windows COM setup](windows-runtime.md).
 
 ## Identify the runtime
 
@@ -10,7 +10,7 @@ The supported starting path for this skill is the built-in JavaScript engine. Us
 
 An ordinary JavaScript runtime does not supply `application`, `session`, `window`, or `userarea`. These are SAP host objects determined by the script context. The bundled scripts use `application` and select a session explicitly so they also work in a global scripting window.
 
-If a future task needs unattended external attachment, first establish a documented, available adapter and test it. Do not invent an AppleScript dictionary, socket endpoint, REST API, or COM bridge. Desktop control of the editor is a valid execution mechanism when available, but it is not an external scripting API connection.
+Use the bundled [local file bridge](java-shell-runtime.md) for shell control of an existing Java instance. It is a repository-provided transport around the built-in engine, not a native SAP external attachment API. The native launcher's `-f`/`-F` starts scripts in a new process in the tested version; do not assume it sees the user's existing sessions. Do not invent an AppleScript dictionary, socket endpoint, REST API, or COM bridge. Desktop control of the editor can perform the one-time bootstrap when available; otherwise the user loads it once.
 
 ## Client and server readiness
 
@@ -30,6 +30,8 @@ On the ABAP application server, `sapgui/user_scripting` enables scripting. Furth
 Use the configured script directories for menu discovery or select a file elsewhere with the file chooser. Check actual directory existence and write access before saving or exporting. Creating/loading a script does not require registering its directory in preferences. Keep local target configuration in a copy outside the repository.
 
 Files in configured directories can be invoked directly from the **Scripts** menu. In the tested Java client this showed a completion dialog rather than the editor's returned JSON. Use the editor when collecting structured inspection output, and verify the native screen after either execution path.
+
+With the file bridge already running, submit scripts through `java-shell.py --script` and read its JSON instead of reopening the editor. The bridge uses its own private IPC directory. SAP's `application.utils.openFile()` writes relative to the configured file-output directory; an absolute filename is not a way to select another output directory.
 
 ## Desktop tool caveats
 

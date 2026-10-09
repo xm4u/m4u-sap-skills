@@ -19,7 +19,7 @@ for (var c = 0; c < connections.length; c++) {
 }
 ```
 
-Do not substitute `Children(0)`, `.Count`, `GetObject("SAPGUI")`, `win32com`, or `WScript`. Avoid assuming Node imports, DOM globals, timers, or modern JavaScript syntax are available. The bundled scripts use ES5-compatible syntax. `return JSON.stringify(result, null, 2)` at the end of an immediately invoked function produces visible editor output in the tested client.
+Do not substitute `Children(0)`, `.Count`, `GetObject("SAPGUI")`, `win32com`, or `WScript`. Avoid assuming Node imports, DOM globals, browser timers, or modern JavaScript syntax are available. The bundled scripts use ES5-compatible syntax. `return JSON.stringify(result, null, 2)` at the end of an immediately invoked function produces visible editor output and becomes the shell bridge's `result`. Java interop is used by the [bridge bootstrap](java-shell-runtime.md), not supplied by Node or a browser.
 
 ## Recording and IDs
 
@@ -41,7 +41,7 @@ Before switching transactions, verify the system/client/user, active window type
 
 After a round trip, read `session.info.transaction`, `program`, `screenNumber` and the status bar's `messageType`/`text`. Check the expected controls and values. Handle `E` and `A` as failures; interpret warnings/information in context rather than accepting them automatically. A lack of an error message is insufficient to prove the intended screen or data appeared.
 
-The inspected Java session wrapper does not expose Windows' `Busy` property. Do not use `session.busy` as a universal Java wait condition. Let recorded synchronous actions complete, use expected-screen assertions at transitions, and let an external desktop orchestrator observe changes with a bounded timeout. Tight polling or sleeping on the UI thread can prevent progress.
+The inspected Java session wrapper does not expose Windows' `Busy` property. Do not use `session.busy` as a universal Java wait condition. Let recorded synchronous actions complete and use expected-screen assertions at transitions. The shell client waits for the bridge's matching response with a bounded timeout; this does not cancel an in-progress action. Tight polling or sleeping on the UI thread can prevent progress.
 
 ## Popups, tables, and reuse
 

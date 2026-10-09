@@ -1,4 +1,4 @@
-/* Run inside SAP GUI for Java: Scripts > Scripting > File > Open Script.
+/* Submit through java-shell.py --script, or load in SAP GUI's scripting editor.
  * Reads session metadata only. Does not navigate, log in, or export table data.
  */
 (function () {
