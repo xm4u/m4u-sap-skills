@@ -1,3 +1,3 @@
 interface:
-  display_name: "SAP GUI for Java Scripting"
-  short_description: "Automate and test SAP GUI for Java sessions"
+  display_name: "SAP GUI Scripting"
+  short_description: "Automate SAP GUI for Java and Windows sessions"

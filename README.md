@@ -1,6 +1,6 @@
 # m4u SAP Skills
 
-A collection of SAP skills for coding agents. `sap-abap-standards` provides conventions for developing and reviewing ABAP code. `sap-gui-scripting` provides automation and testing workflows for SAP GUI for Java using its built-in JavaScript engine.
+A collection of SAP skills for coding agents. `sap-abap-standards` provides conventions for developing and reviewing ABAP code. `sap-gui-scripting` provides automation and testing for SAP GUI for Java (built-in JavaScript) and native SAP GUI for Windows (COM/VBScript).
 
 It is intended for ABAP developers, GUI testers, and coding agents working with SAP objects and desktop workflows.
 
@@ -9,7 +9,7 @@ It is intended for ABAP developers, GUI testers, and coding agents working with 
 | Skill | Coverage |
 | --- | --- |
 | [sap-abap-standards](skills/sap-abap-standards/SKILL.md) | ABAP naming, traceability, code quality, performance, constants, authorizations, and program structure. |
-| [sap-gui-scripting](skills/sap-gui-scripting/SKILL.md) | SAP GUI for Java session inspection, JavaScript automation, transaction navigation, and GUI testing on macOS, Linux, and Windows. |
+| [sap-gui-scripting](skills/sap-gui-scripting/SKILL.md) | Session inspection, navigation, and SE16 testing for SAP GUI for Java and SAP GUI for Windows. |
 
 The ABAP skill is organized into ten topics. Its [SKILL.md](skills/sap-abap-standards/SKILL.md) routes tasks to topic guides, detailed rules, examples, and checklists.
 
@@ -50,7 +50,12 @@ m4u-sap-skills/
         └── scripts/
             ├── inspect-session.js
             ├── se16-table-smoke.js
-            └── validate-scripts.cjs
+            ├── validate-scripts.cjs
+            └── windows/
+                ├── runtime.vbs
+                ├── inspect-session.vbs
+                ├── se16-table-smoke.vbs
+                └── validate-scripts.vbs
 ```
 
 Each ABAP topic directory contains a `guide.md` and its detailed reference files. The GUI skill links to execution, scripting, testing, and SE16 guides. All references and scripts are installed together with their skill.
@@ -66,7 +71,7 @@ git clone https://github.com/xm4u/m4u-sap-skills.git
 cd m4u-sap-skills
 ```
 
-There are no project dependencies to install or build steps to run. The instructions are written in Markdown; the ABAP snippets are examples from the reference guides. The GUI scripts execute inside SAP GUI for Java and require an authenticated session and effective scripting permissions. They are not a Node.js application or a Windows COM connector.
+There are no project dependencies to install or build steps to run. The instructions are written in Markdown; the ABAP snippets are reference examples. Java GUI scripts execute inside the Java client; Windows `.vbs` scripts attach through COM using Windows Script Host (`cscript.exe`). Both require an authenticated session and effective scripting permissions. Node.js is used only for optional local Java fixture checks.
 
 For a specific question, open the relevant topic guide and follow its links to the detailed references. To review a complete development, start with the [comprehensive review checklist](skills/sap-abap-standards/references/review/review-checklist.md).
 
@@ -78,7 +83,7 @@ Install the ABAP standards skill from your project directory:
 pnpm dlx skills add xm4u/m4u-sap-skills --skill sap-abap-standards
 ```
 
-To install the SAP GUI for Java automation/testing skill:
+To install the SAP GUI automation/testing skill for Java and Windows:
 
 ```sh
 pnpm dlx skills add xm4u/m4u-sap-skills --skill sap-gui-scripting
@@ -180,7 +185,25 @@ then run an SE16/VBAK display smoke test limited to ten rows.
 Verify the final SAP screen and report what actually passed.
 ```
 
-Scripts run in the Java client on the target desktop, not in a standalone JavaScript runtime. The initial live baseline is macOS with SAP GUI for Java 8.10 rev13; other platforms and screen variants need separate validation. Windows COM/VBScript/Python automation is outside this skill's execution adapter.
+Java scripts run in the Java client on the target desktop. The Java live baseline is macOS with SAP GUI for Java 8.10 rev13; other Java platforms and screen variants need separate validation.
+
+### SAP GUI for Windows automation and testing
+
+Use [Windows COM/VBScript execution](skills/sap-gui-scripting/references/windows-runtime.md). From the repository root, inspect existing authenticated sessions:
+
+```powershell
+cscript.exe //nologo skills/sap-gui-scripting/scripts/windows/inspect-session.vbs
+```
+
+Use the observed system, client, user, and session ID to run the same SE16/VBAK test, limited to ten rows:
+
+```powershell
+cscript.exe //nologo skills/sap-gui-scripting/scripts/windows/se16-table-smoke.vbs /system:YOUR_SYSTEM /client:YOUR_CLIENT /user:YOUR_USER /session:/app/con[0]/ses[0] /table:VBAK /execute:true /maxRows:10
+```
+
+Replace the identity placeholders with the inspection output. Omit `/execute:true` to open only the selection screen. Keep the complete Windows script folder together. Scripts use the usual `GetObject("SAPGUI")` / `GetScriptingEngine` COM path; desktop automation is not required to execute them. No packages or new login are needed.
+
+The [live Windows baseline](skills/sap-gui-scripting/references/se16-example.md#windows-live-baseline-2026-10-09) passed on native SAP GUI for Windows 8.10 64-bit: VBAK showed ten hits and the restriction message; the final program was `SAPLSLVC_FULLSCREEN`, screen `500`. The result list was left open without modifying records or exporting data.
 
 ## Quick references
 

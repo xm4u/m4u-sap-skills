@@ -19,10 +19,10 @@ Do not treat an accepted script, a success status message, or a screenshot alone
 
 ## Execute a case
 
-1. Inspect the session using `inspect-session.js`. Account for inventory errors and effective read-only/recording restrictions.
-2. Configure a local copy of the action script with the observed identity and exact IDs. If several sessions match, select the observed session ID as well. Keep personal settings outside the reusable skill.
+1. Inspect the session using the selected adapter's `inspect-session.js`. Account for inventory errors and effective read-only/recording restrictions.
+2. Configure a local Java script copy or Windows named arguments with the observed identity and exact IDs. If several sessions match, select the observed session ID as well. Keep personal settings outside the reusable skill.
 3. Confirm the starting screen has no unrelated unsaved work or unresolved popup. Navigation authorization does not imply authorization to save, post, delete, export, or change roles.
-4. Replay once; wait for **RECEIVED** or a visible exception. Check screen identity at each transition and inspect the final native UI.
+4. Run once; wait for Java **RECEIVED**, Windows JSON/exit code, or an exception. Check screen identity at each transition and inspect the final native UI.
 5. If the action fails, record the actual failing phase, error/status message, and observed state. Resume from that state only after understanding it; do not rerun the entire workflow blindly.
 6. Leave the requested final screen visible unless the user asked to restore the starting state. Do not log out or close unrelated sessions as cleanup.
 
@@ -47,3 +47,11 @@ pnpm exec node skills/sap-gui-scripting/scripts/validate-scripts.cjs
 ```
 
 Run that command from this repository's root. For an installed/copied skill, pass its actual script path instead. It never attaches to SAP or changes a desktop. The Node requirement applies only to these development checks, not to executing `.js` files in the Java client.
+
+For Windows COM selection and stopping behavior, also run [Windows VBS fixtures](../scripts/windows/validate-scripts.vbs):
+
+```powershell
+cscript.exe //nologo skills/sap-gui-scripting/scripts/windows/validate-scripts.vbs
+```
+
+These fixtures use COM-shaped mocks in VBScript; they do not attach to SAP or prove live table access. They check argument validation, inventory, session selection, and stopping before navigation. The separate live baselines are recorded in [SE16 evidence](se16-example.md).

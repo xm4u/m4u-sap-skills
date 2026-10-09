@@ -1,5 +1,7 @@
 # Setup and execution
 
+This page covers SAP GUI for Java. For native SAP GUI for Windows, use [Windows COM setup](windows-runtime.md).
+
 ## Identify the runtime
 
 Confirm that the application is **SAP GUI for Java**, its version/revision, and the target session's system, client, and user. macOS, Linux, and Windows are supported Java client platforms; SAP GUI for Windows is a separate product.
