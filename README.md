@@ -1,12 +1,17 @@
 # m4u SAP Skills
 
-A collection of SAP skills for coding agents. The first skill, `sap-abap-standards`, provides conventions for developing and reviewing ABAP code: naming, traceability, code quality, performance, constants, authorizations, and program structure.
+A collection of SAP skills for coding agents. `sap-abap-standards` provides conventions for developing and reviewing ABAP code. `sap-gui-scripting` provides automation and testing workflows for SAP GUI for Java using its built-in JavaScript engine.
 
-It is intended for ABAP developers and coding agents working with programs, classes, functions, and other SAP objects.
+It is intended for ABAP developers, GUI testers, and coding agents working with SAP objects and desktop workflows.
 
 ## Contents
 
-The repository currently contains one skill, `sap-abap-standards`, organized into ten topics. Its [SKILL.md](skills/sap-abap-standards/SKILL.md) routes tasks to ten topic guides. Each guide explains when it applies and links to the detailed rules, examples, and checklists.
+| Skill | Coverage |
+| --- | --- |
+| [sap-abap-standards](skills/sap-abap-standards/SKILL.md) | ABAP naming, traceability, code quality, performance, constants, authorizations, and program structure. |
+| [sap-gui-scripting](skills/sap-gui-scripting/SKILL.md) | SAP GUI for Java session inspection, JavaScript automation, transaction navigation, and GUI testing on macOS, Linux, and Windows. |
+
+The ABAP skill is organized into ten topics. Its [SKILL.md](skills/sap-abap-standards/SKILL.md) routes tasks to topic guides, detailed rules, examples, and checklists.
 
 | Topic | Coverage |
 | --- | --- |
@@ -25,22 +30,30 @@ The repository currently contains one skill, `sap-abap-standards`, organized int
 m4u-sap-skills/
 ├── README.md
 └── skills/
-    └── sap-abap-standards/
+    ├── sap-abap-standards/
+    │   ├── SKILL.md
+    │   └── references/
+    │       ├── core/
+    │       ├── object-naming/
+    │       ├── coding-quality/
+    │       ├── performance/
+    │       ├── constants/
+    │       ├── authorizations/
+    │       ├── modularization/
+    │       ├── program-structure/
+    │       ├── format-ui/
+    │       └── review/
+    └── sap-gui-scripting/
         ├── SKILL.md
-        └── references/
-            ├── core/
-            ├── object-naming/
-            ├── coding-quality/
-            ├── performance/
-            ├── constants/
-            ├── authorizations/
-            ├── modularization/
-            ├── program-structure/
-            ├── format-ui/
-            └── review/
+        ├── agents/openai.yaml
+        ├── references/
+        └── scripts/
+            ├── inspect-session.js
+            ├── se16-table-smoke.js
+            └── validate-scripts.cjs
 ```
 
-Each topic directory contains a `guide.md` and its detailed reference files. All references are installed together with the skill.
+Each ABAP topic directory contains a `guide.md` and its detailed reference files. The GUI skill links to execution, scripting, testing, and SE16 guides. All references and scripts are installed together with their skill.
 
 ## Usage
 
@@ -53,7 +66,7 @@ git clone https://github.com/xm4u/m4u-sap-skills.git
 cd m4u-sap-skills
 ```
 
-There are no dependencies to install or build steps to run. The content is written in Markdown; the ABAP snippets are examples from the reference guides.
+There are no project dependencies to install or build steps to run. The instructions are written in Markdown; the ABAP snippets are examples from the reference guides. The GUI scripts execute inside SAP GUI for Java and require an authenticated session and effective scripting permissions. They are not a Node.js application or a Windows COM connector.
 
 For a specific question, open the relevant topic guide and follow its links to the detailed references. To review a complete development, start with the [comprehensive review checklist](skills/sap-abap-standards/references/review/review-checklist.md).
 
@@ -63,6 +76,12 @@ Install the ABAP standards skill from your project directory:
 
 ```sh
 pnpm dlx skills add xm4u/m4u-sap-skills --skill sap-abap-standards
+```
+
+To install the SAP GUI for Java automation/testing skill:
+
+```sh
+pnpm dlx skills add xm4u/m4u-sap-skills --skill sap-gui-scripting
 ```
 
 For global installation across projects:
@@ -84,6 +103,7 @@ For a local checkout or extracted ZIP, replace `xm4u/m4u-sap-skills` with the pa
 ```sh
 pnpm dlx skills add . --list
 pnpm dlx skills add . --skill sap-abap-standards
+pnpm dlx skills add . --skill sap-gui-scripting
 ```
 
 The GitHub commands require the repository and these files to be published at `xm4u/m4u-sap-skills`. Until then, use the local path commands.
@@ -93,8 +113,8 @@ See the [skills CLI documentation](https://github.com/vercel-labs/skills#options
 ### Manual installation from a ZIP
 
 1. Open the [GitHub repository](https://github.com/xm4u/m4u-sap-skills), choose **Code → Download ZIP**, and extract the archive.
-2. Open the extracted repository's `skills/` directory and copy the complete `sap-abap-standards/` folder into your agent's global or project skills directory, using one of the paths below.
-3. Confirm that `SKILL.md` is directly inside the installed `sap-abap-standards/` folder and that `references/` is alongside it.
+2. Open the extracted repository's `skills/` directory and copy the complete skill folder (`sap-abap-standards/` or `sap-gui-scripting/`) into your agent's global or project skills directory, using one of the paths below.
+3. Confirm that `SKILL.md` is directly inside the installed skill folder and keep all accompanying resources together.
 4. Start a new agent session. If the skill does not appear, restart the agent and check the destination path.
 
 Choose global installation to use the skill across projects, or project installation to keep it within one project.
@@ -103,6 +123,8 @@ Choose global installation to use the skill across projects, or project installa
 | --- | --- | --- |
 | Codex | `~/.agents/skills/sap-abap-standards/` | `<project>/.agents/skills/sap-abap-standards/` |
 | OpenCode | `~/.config/opencode/skills/sap-abap-standards/` | `<project>/.opencode/skills/sap-abap-standards/` |
+
+For the GUI skill, replace the last path component with `sap-gui-scripting/`.
 
 These locations are documented in the [Codex skill guide](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills) and [OpenCode skill guide](https://docs.opencode.ai/docs/skills/#place-files). For other agents, use the skills directory documented by that agent. `~` means your home directory; on Windows, use your user profile directory for the equivalent path.
 
@@ -119,7 +141,7 @@ Example layout for a project using Codex:
 
 Copy the skill folder itself, not the entire extracted repository or just `SKILL.md`. Keep all reference files together. No package manager or installer is required.
 
-To update, download the latest ZIP and replace the installed `sap-abap-standards/` folder with the new copy. To uninstall, remove that folder from the chosen skills directory.
+To update, download the latest ZIP and replace the installed skill folder with the new copy. To uninstall, remove that folder from the chosen skills directory.
 
 ### With a coding agent
 
@@ -145,6 +167,20 @@ and how errors are handled. Identify signatures to confirm in SAP.
 ```
 
 The comprehensive review is an entry point: it identifies the objects involved and points to the relevant topic guides. For smaller tasks, consult the affected topic directly.
+
+### SAP GUI for Java automation and testing
+
+Start with [setup and execution](skills/sap-gui-scripting/references/setup-and-runtime.md). Load [inspect-session.js](skills/sap-gui-scripting/scripts/inspect-session.js) in SAP GUI's scripting window and replay it to inspect reachable sessions. It reads metadata without navigating or retrieving table rows.
+
+For the [SE16 example](skills/sap-gui-scripting/references/se16-example.md), configure a local copy of [se16-table-smoke.js](skills/sap-gui-scripting/scripts/se16-table-smoke.js) with the observed system, client, user, and optional session ID. It opens the VBAK selection screen by default; enable its execution option only for a requested table read. The example caps results at ten rows and does not modify records.
+
+```text
+Use sap-gui-scripting to inspect my open SAP GUI for Java session,
+then run an SE16/VBAK display smoke test limited to ten rows.
+Verify the final SAP screen and report what actually passed.
+```
+
+Scripts run in the Java client on the target desktop, not in a standalone JavaScript runtime. The initial live baseline is macOS with SAP GUI for Java 8.10 rev13; other platforms and screen variants need separate validation. Windows COM/VBScript/Python automation is outside this skill's execution adapter.
 
 ## Quick references
 
