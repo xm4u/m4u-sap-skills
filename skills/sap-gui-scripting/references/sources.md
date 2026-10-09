@@ -27,4 +27,6 @@ This is a compatibility baseline, not a promise that every SAP GUI for Java revi
 
 Also on 2026-10-09, the local Java file bridge passed shell status and session inspection in the authenticated macOS client. Python returned one session and no inventory errors without per-script editor interaction. The transport baseline does not prove SE38 editing, activation or business changes; see [shell execution](java-shell-runtime.md#validation).
 
+The same client version also passed automatic `java-shell.py --start` bootstrap, reuse, and recovery after a confirmed test-process exit with stale control files retained. The native launcher supplied `-F`; no editor replay, computer-use tool, or accessibility permission was involved in that startup test.
+
 On the same date, native SAP GUI for Windows **8.10 64-bit** passed COM attachment, session inspection, and SE16/VBAK display of ten rows using WSH VBScript. See the [SE16 example](se16-example.md) for both live outcomes and binary versions, and [Windows execution](windows-runtime.md) for the observed PowerShell COM binding limitation. WSH availability, other hosts, versions, and screen variants need separate validation.

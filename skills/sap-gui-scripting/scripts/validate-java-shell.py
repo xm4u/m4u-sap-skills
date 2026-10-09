@@ -7,6 +7,8 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import patch
+import os
 
 spec = importlib.util.spec_from_file_location("java_shell", Path(__file__).with_name("java-shell.py"))
 shell = importlib.util.module_from_spec(spec)
@@ -123,6 +125,69 @@ class ProtocolTests(unittest.TestCase):
             shell.submit(self.root, "run", "x" * 1048576, 0.05)
         self.assertFalse((self.root / "request.json").exists())
         self.assertFalse((self.root / "client.lock").exists())
+
+    def test_start_reuses_ready_bridge_without_spawning(self):
+        with patch.object(shell.subprocess, "Popen") as spawn:
+            result = shell.start_bridge(self.root, Path("/missing/SAPGUI"), 1)
+        self.assertTrue(result["reused"])
+        spawn.assert_not_called()
+
+    def test_recent_heartbeat_cannot_hide_an_exited_process(self):
+        self.write_state(processId=12345)
+        with patch.object(shell, "process_alive", return_value=False):
+            with self.assertRaisesRegex(shell.BridgeError, "exited"):
+                shell.bridge_state(self.root)
+
+    def test_start_preserves_unresolved_requests(self):
+        (self.root / "client.lock").mkdir()
+        with patch.object(shell.subprocess, "Popen") as spawn:
+            with self.assertRaisesRegex(shell.BridgeError, "Unresolved"):
+                shell.start_bridge(self.root, None, 1)
+        spawn.assert_not_called()
+        self.assertTrue((self.root / "client.lock").exists())
+        self.assertFalse((self.root / "launch.lock").exists())
+
+    def test_start_refuses_stale_bridge_with_live_owner(self):
+        self.write_state(heartbeatAt=0, processId=os.getpid())
+        (self.root / "server.lock").touch()
+        with self.assertRaisesRegex(shell.BridgeError, "still alive"):
+            shell.start_bridge(self.root, None, 1)
+        self.assertTrue((self.root / "server.lock").exists())
+        self.assertFalse(list(self.root.glob("previous-*")))
+
+    def test_start_preserves_legacy_owner_without_process_identity(self):
+        self.write_state(stopped=True)
+        (self.root / "server.lock").touch()
+        with self.assertRaisesRegex(shell.BridgeError, "no process identity"):
+            shell.start_bridge(self.root, None, 1)
+        self.assertTrue((self.root / "server.lock").exists())
+
+    def test_start_recovers_dead_owner_and_passes_script_without_shell(self):
+        self.write_state(heartbeatAt=0, processId=12345)
+        (self.root / "server.lock").touch()
+        old = (self.root / "bridge.json").read_text()
+        def spawn(command, **options):
+            self.assertEqual(command[1:3], ["-b", "-F"])
+            self.assertNotIn("shell", options)
+            self.assertTrue(options["start_new_session"])
+            self.assertEqual(command[-1], str(self.root / "bootstrap.js"))
+            self.assertIn(json.dumps(str(self.root)), (self.root / "bootstrap.js").read_text())
+            self.write_state(instanceId="new-instance", processId=54321)
+            class Child:
+                pid = 54321
+                def poll(self):
+                    return None
+            return Child()
+        with patch.object(shell, "process_alive", side_effect=lambda pid: pid == 54321), \
+                patch.object(shell, "find_sapgui", return_value=Path("/fixture/SAP GUI")), \
+                patch.object(shell.subprocess, "Popen", side_effect=spawn):
+            result = shell.start_bridge(self.root, None, 1)
+        self.assertFalse(result["reused"])
+        self.assertEqual(result["instanceId"], "new-instance")
+        archives = list(self.root.glob("previous-*"))
+        self.assertEqual(len(archives), 1)
+        self.assertEqual((archives[0] / "bridge.json").read_text(), old)
+        self.assertTrue((archives[0] / "server.lock").exists())
 
 
 if __name__ == "__main__":

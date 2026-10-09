@@ -1,6 +1,6 @@
 # Setup and execution
 
-This page covers SAP GUI for Java's editor and client setup. For agents with shell access, start with [Java shell execution](java-shell-runtime.md): after a one-time in-client bridge bootstrap, scripts and JSON results are exchanged through shell commands. For native SAP GUI for Windows, use [Windows COM setup](windows-runtime.md).
+This page covers SAP GUI for Java's editor and client setup. For agents with shell access, start with [Java shell execution](java-shell-runtime.md): `java-shell.py --start` loads the bridge automatically at startup; scripts and JSON results are then exchanged through shell commands. For native SAP GUI for Windows, use [Windows COM setup](windows-runtime.md).
 
 ## Identify the runtime
 
@@ -10,7 +10,7 @@ The supported starting path for this skill is the built-in JavaScript engine. Us
 
 An ordinary JavaScript runtime does not supply `application`, `session`, `window`, or `userarea`. These are SAP host objects determined by the script context. The bundled scripts use `application` and select a session explicitly so they also work in a global scripting window.
 
-Use the bundled [local file bridge](java-shell-runtime.md) for shell control of an existing Java instance. It is a repository-provided transport around the built-in engine, not a native SAP external attachment API. The native launcher's `-f`/`-F` starts scripts in a new process in the tested version; do not assume it sees the user's existing sessions. Do not invent an AppleScript dictionary, socket endpoint, REST API, or COM bridge. Desktop control of the editor can perform the one-time bootstrap when available; otherwise the user loads it once.
+Use the bundled [local file bridge and launcher](java-shell-runtime.md) for shell control. It is a repository-provided transport around the built-in engine, not a native SAP external attachment API. `java-shell.py --start` uses `-F` to load it in a new process when no ready bridge exists; it does not see the user's sessions in another process. Do not invent an AppleScript dictionary, socket endpoint, REST API, or COM bridge. Desktop loading is an optional fallback for retaining an already-open unbridged instance.
 
 ## Client and server readiness
 

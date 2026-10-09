@@ -1,4 +1,4 @@
-/* Load once in the authenticated SAP GUI for Java instance (Scripts > Scripting).
+/* Started automatically by java-shell.py --start; editor loading also works.
  * Agents then use java-shell.py through their ordinary shell.
  * Local file IPC, not an SAP external API. No connection, login or navigation.
  */
@@ -21,6 +21,9 @@ var SAP_GUI_SHELL_BRIDGE;
     var Timer = Java.type("java.util.Timer");
     var TimerTask = Java.type("java.util.TimerTask");
     var UUID = Java.type("java.util.UUID");
+    var Runtime = Java.type("java.lang.management.ManagementFactory").getRuntimeMXBean();
+    var processId = Number(String(Runtime.getName()).split("@")[0]);
+    var processStartedAt = Number(Runtime.getStartTime());
     var PosixPermissions = Java.type("java.nio.file.attribute.PosixFilePermissions");
     var root = Paths.get(SAP_GUI_BRIDGE_DIRECTORY ||
         String(System.getProperty("user.home")) + "/scripts/sap-gui-shell-bridge");
@@ -53,6 +56,7 @@ var SAP_GUI_SHELL_BRIDGE;
     }
     function state() {
         return {schema: "sap-gui-java-bridge/v1", instanceId: instanceId,
+            processId: processId, processStartedAt: processStartedAt,
             startedAt: started, heartbeatAt: Date.now(), stopped: stopped,
             activeRequest: activeRequest,
             majorVersion: Number(hostApplication.majorVersion),
@@ -131,6 +135,8 @@ var SAP_GUI_SHELL_BRIDGE;
         timer = new Timer("SAP GUI local shell bridge", true);
         var Task = Java.extend(TimerTask, {run: tick});
         SAP_GUI_SHELL_BRIDGE = {timer: timer, directory: String(root), instanceId: instanceId};
+        writeJSON("owner.json", {schema: "sap-gui-java-owner/v1", processId: processId,
+            processStartedAt: processStartedAt, instanceId: instanceId});
         writeJSON("bridge.json", state());
         timer.schedule(new Task(), 250, 250);
     } catch (startupError) {

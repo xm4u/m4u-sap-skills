@@ -7,7 +7,7 @@ description: Automate SAP GUI from a shell using the Java local script bridge or
 
 Identify the actual SAP client before choosing an adapter:
 
-- **SAP GUI for Java on macOS**: prefer [Java shell execution](references/java-shell-runtime.md). Check `python3 scripts/java-shell.py --status`, then submit the root `scripts/*.js` with `--script`. The bridge needs a one-time bootstrap inside the authenticated client; subsequent operations need only shell access. Read [Java setup](references/setup-and-runtime.md) for bootstrap/editor details. Java on Linux requires separate validation; other Java environments retain the built-in editor workflow.
+- **SAP GUI for Java on macOS**: prefer [Java shell execution](references/java-shell-runtime.md). Run `python3 scripts/java-shell.py --start`: it reuses a ready bridge or starts SAP GUI with the bridge automatically, including recovery after a confirmed process exit. Then submit `scripts/inspect-session.js` with `--script`. Do not require manual script loading for this startup workflow. An existing unbridged client cannot be attached through the launcher; preserve it and use the new instance's normal login. Java on Linux requires separate validation; other Java environments retain the built-in editor workflow.
 - **SAP GUI for Windows**: run `scripts/windows/*.vbs` with `cscript.exe //nologo`. These scripts attach to an existing authenticated session through COM. Read [Windows setup and execution](references/windows-runtime.md).
 
 A skill supplies instructions and scripts; it does not install SAP or authenticate a user. Node/browser JavaScript does not provide either client's SAP host objects. With the Java bridge, Python transports files while SAP's engine executes the script. Verify screens and requested outcomes through scripting assertions; add native desktop inspection when available. A computer-use tool is not required for an already running bridge or Windows COM.
@@ -25,7 +25,7 @@ A skill supplies instructions and scripts; it does not install SAP or authentica
 
 | Task | Resource |
 | --- | --- |
-| Java: shell-only agent, bridge bootstrap, JSON results and recovery | [Java shell execution](references/java-shell-runtime.md); [client](scripts/java-shell.py); [bootstrap](scripts/java-shell-bridge.js) |
+| Java: automatic startup, shell scripts, JSON results and restart recovery | [Java shell execution](references/java-shell-runtime.md); [client/launcher](scripts/java-shell.py); [macOS shortcut](scripts/start-sapgui.command) |
 | Java: enable/check scripting, load a file, handle local paths | [Setup and execution](references/setup-and-runtime.md) |
 | Windows: COM attachment, WSH commands, settings, troubleshooting | [Windows setup and execution](references/windows-runtime.md) |
 | Inspect sessions and effective scripting modes | Java [inspect-session.js](scripts/inspect-session.js); Windows [inspect-session.vbs](scripts/windows/inspect-session.vbs) |

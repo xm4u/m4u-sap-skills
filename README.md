@@ -52,6 +52,7 @@ m4u-sap-skills/
             ├── se16-table-smoke.js
             ├── java-shell-bridge.js
             ├── java-shell.py
+            ├── start-sapgui.command
             ├── validate-java-shell.py
             ├── validate-scripts.cjs
             └── windows/
@@ -74,7 +75,7 @@ git clone https://github.com/xm4u/m4u-sap-skills.git
 cd m4u-sap-skills
 ```
 
-There are no project dependencies to install or build steps to run. The instructions are written in Markdown; the ABAP snippets are reference examples. Java GUI scripts execute inside the Java client; its shell adapter uses Python 3.8+ and a bridge loaded once in that client. Windows `.vbs` scripts attach through COM using Windows Script Host (`cscript.exe`). Both require an authenticated session and effective scripting permissions. Node.js is used only for optional local Java fixture checks.
+There are no project dependencies to install or build steps to run. The instructions are written in Markdown; the ABAP snippets are reference examples. Java GUI scripts execute inside the Java client; its Python 3.8+ launcher loads the bridge automatically at startup. Windows `.vbs` scripts attach through COM using Windows Script Host (`cscript.exe`). Both require an authenticated session and effective scripting permissions. Node.js is used only for optional local Java fixture checks.
 
 For a specific question, open the relevant topic guide and follow its links to the detailed references. To review a complete development, start with the [comprehensive review checklist](skills/sap-abap-standards/references/review/review-checklist.md).
 
@@ -178,14 +179,14 @@ The comprehensive review is an entry point: it identifies the objects involved a
 
 ### SAP GUI for Java automation and testing
 
-Start with [Java shell execution](skills/sap-gui-scripting/references/java-shell-runtime.md). Load [java-shell-bridge.js](skills/sap-gui-scripting/scripts/java-shell-bridge.js) once in the authenticated client's scripting window and replay it. After bootstrap, an agent needs only shell access:
+Start with [Java shell execution](skills/sap-gui-scripting/references/java-shell-runtime.md). An agent needs only shell access to start SAP GUI with the bridge included, inspect sessions and submit scripts:
 
 ```sh
-python3 skills/sap-gui-scripting/scripts/java-shell.py --status
+python3 skills/sap-gui-scripting/scripts/java-shell.py --start
 python3 skills/sap-gui-scripting/scripts/java-shell.py --script skills/sap-gui-scripting/scripts/inspect-session.js
 ```
 
-The commands return JSON and exit codes directly. The inspection reads session metadata without navigation or table rows. A running bridge removes the need for manual replay or copying JSON for each task. The script editor can be closed. Use [client setup](skills/sap-gui-scripting/references/setup-and-runtime.md) for bootstrap details.
+The commands return JSON and exit codes directly. `--start` reuses a ready bridge or opens SAP GUI with the bridge loaded automatically. After closing SAP, the same command recovers a confirmed exited owner and starts it again. Inspect sessions next and use the normal SAP login when needed; bridge readiness alone is not authentication. Existing unbridged clients are preserved. On macOS, [start-sapgui.command](skills/sap-gui-scripting/scripts/start-sapgui.command) is also a double-click launcher. Manual script loading is an optional fallback for an already-open authenticated instance.
 
 For the [SE16 example](skills/sap-gui-scripting/references/se16-example.md), configure a local copy of [se16-table-smoke.js](skills/sap-gui-scripting/scripts/se16-table-smoke.js) with the observed system, client, user, and optional session ID, then submit it using `java-shell.py --script /absolute/path/se16-configured.js`. It opens the VBAK selection screen by default; enable its execution option only for a requested table read. The example caps results at ten rows and does not modify records.
 
